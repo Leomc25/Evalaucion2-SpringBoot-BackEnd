@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8">
+        <title>Gestión de Tareas - Cibertec</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+
+        <style>
+            /* 1. Animación de vibración */
+            @keyframes vibrar {
+                0% {
+                    transform: translate(0, 0) rotate(0deg);
+                }
+                25% {
+                    transform: translate(1px, 1px) rotate(5deg);
+                }
+                50% {
+                    transform: translate(0, 0) rotate(0deg);
+                }
+                75% {
+                    transform: translate(-1px, 1px) rotate(-5deg);
+                }
+                100% {
+                    transform: translate(0, 0) rotate(0deg);
+                }
+            }
+
+            /* 2. EVITAR QUE EL BOTÓN SE RELLENE DE COLOR */
+            /* Seleccionamos el estado hover de ambos botones para mantener el fondo transparente */
+            .btn-outline-danger:hover,
+            .btn-outline-primary:hover {
+                background-color: transparent !important; /* Evita el relleno */
+                /* Mantenemos el color del borde y del texto original */
+            }
+
+            /* 3. EFECTO SOLO PARA EL ICONO ELIMINAR */
+            .btn-outline-danger:hover svg {
+                animation: vibrar 0.15s linear infinite;
+                color: #dc3545; /* Mantiene el icono rojo */
+            }
+
+            .btn-outline-danger:hover {
+                color: #dc3545 !important; /* Mantiene el texto "Eliminar" rojo */
+                border-color: #dc3545 !important;
+            }
+
+            /* 4. EFECTO SOLO PARA EL ICONO EDITAR */
+            .btn-outline-primary:hover svg {
+                transform: scale(1.3) rotate(-20deg);
+                transition: all 0.2s ease-in-out;
+                color: #0d6efd; /* Mantiene el icono azul */
+            }
+
+            .btn-outline-primary:hover {
+                color: #0d6efd !important; /* Mantiene el texto "Editar" azul */
+                border-color: #0d6efd !important;
+            }
+
+            /* Suavizado general para los iconos */
+            svg {
+                transition: all 0.2s ease-in-out;
+            }
+
+
+
+
+            /* Color Púrpura para el estado Escalado (Estilo ITIL) */
+            .bg-purple {
+                background-color: #6f42c1; /* Púrpura oficial de Bootstrap */
+                color: white;
+                box-shadow: 0 0 5px rgba(111, 66, 193, 0.5);
+                font-weight: bold;
+            }
+
+            /* Opcional: Si quieres que el estado Escalado "parpadee" suavemente para llamar la atención */
+            .bg-purple {
+                animation: pulse-escalado 2s infinite;
+            }
+
+            @keyframes pulse-escalado {
+                0% {
+                    transform: scale(1);
+                }
+                50% {
+                    transform: scale(1.05);
+                }
+                100% {
+                    transform: scale(1);
+                }
+            }
+        </style>
+
+
+    </head>
+    <body class="bg-light">
+
+        <nav class="navbar navbar-dark bg-primary shadow-sm mb-4">
+            <div class="container">
+                <span class="navbar-brand">
+                    Bienvenido, <strong th:text="${session.usuarioLogueado.username}">Usuario</strong>
+                </span>
+                <a th:href="@{/logout}" class="btn btn-light btn-sm">Cerrar Sesión</a>
+            </div>
+        </nav>
+
+        <div class="container">
+            <div class="row g-4">
+
+                <div class="col-md-4">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-success text-white">
+                            <h5 class="mb-0" th:text="${nuevaTarea.id > 0} ? 'Editar Tarea' : 'Nueva Tarea'">Nueva Tarea</h5>
+                        </div>
+
+                        <div class="card-body">
+                            <form th:action="${nuevaTarea.id > 0} ? @{/tasks/update} : @{/tasks/create}" 
+                                  th:object="${nuevaTarea}" method="post">
+
+                                <input type="hidden" th:field="*{id}">
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Título</label>
+                                    <input type="text" th:field="*{title}" class="form-control" placeholder="Ej: Estudiar Java" required>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label class="form-label fw-bold">Estado</label>
+                                    <select th:field="*{status}" class="form-select">
+                                        <option value="Pendiente">Pendiente</option>
+                                        <option value="En Proceso">En Proceso</option>
+                                        <option value="Completada">Completada</option>
+                                        <!-- Esto es añadido por mí -->
+                                        <option value="Abierto">Abierto</option>
+                                        <option value="Escalado">Escalado por tiempo</option>
+                                        <option value="Cancelado">Cancelado</option>
+
+                                    </select>
+                                </div>
+
+                                <button type="submit" 
+                                        th:text="${nuevaTarea.id > 0} ? 'Actualizar Tarea' : 'Guardar Tarea'" 
+                                        class="btn btn-success w-100 shadow-sm">
+                                </button>
+
+                                <a th:if="${nuevaTarea.id > 0}" th:href="@{/tasks/list}" class="btn btn-link w-100 mt-2 text-secondary">Cancelar</a>
+
+                            </form>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-8">
+                    <div class="card shadow-sm border-0">
+                        <div class="card-header bg-dark text-white">
+                            <h5 class="mb-0">Listado de Tareas</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th class="ps-3">ID</th>
+                                        <th>Título</th>
+                                        <th>Estado</th>
+                                        <th>Acciones</th> </tr>
+                                </thead>
+                                <tbody>
+                                    <tr th:each="t : ${listaTareas}">
+                                        <td class="ps-3" th:text="${t.id}"></td>
+                                        <td th:text="${t.title}"></td>
+                                        <td>
+                                            <span th:text="${t.status}" 
+                                                  class="badge" 
+                                                  th:classappend="${t.status == 'Completada' ? 'bg-success' : 
+                                                  (t.status == 'Escalado' ? 'bg-purple' : 
+                                                  (t.status == 'Abierto' ? 'bg-info text-dark' : 
+                                                  (t.status == 'En Proceso' ? 'bg-warning text-dark' : 
+                                                  (t.status == 'Cancelado' ? 'bg-danger' : 'bg-secondary'))))}">
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <div class="d-flex gap-2 justify-content-start align-items-center">
+
+                                                <a th:href="@{/tasks/edit/{id}(id=${t.id})}" class="btn btn-sm btn-outline-primary d-inline-flex align-items-center gap-1">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-pencil" viewBox="0 0 16 16">
+                                                    <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708l-10 10a.5.5 0 0 1-.168.11l-5 2a.5.5 0 0 1-.65-.65l2-5a.5.5 0 0 1 .11-.168zM11.207 2.5 13.5 4.793 14.793 3.5 12.5 1.207zm1.586 3L10.5 3.207 4 9.707V10h.5a.5.5 0 0 1 .5.5v.5h.5a.5.5 0 0 1 .5.5v.5h.293zm-9.761 5.175-.106.106-1.528 3.821 3.821-1.528.106-.106A.5.5 0 0 1 5 12.5V12h-.5a.5.5 0 0 1-.5-.5V11h-.5a.5.5 0 0 1-.468-.325"/>
+                                                    </svg>
+                                                    <span></span>
+                                                </a>
+
+                                                <a th:href="@{/tasks/delete/{id}(id=${t.id})}" 
+                                                   class="btn btn-sm btn-outline-danger d-inline-flex align-items-center gap-1"
+                                                   onclick="return confirm('¿Desea eliminar esta tarea?')">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="bi bi-trash2-fill" viewBox="0 0 16 16">
+                                                    <path d="M2.037 3.225A.7.7 0 0 1 2 3c0-1.105 2.686-2 6-2s6 .895 6 2a.7.7 0 0 1-.037.225l-1.684 10.104A2 2 0 0 1 10.305 15H5.694a2 2 0 0 1-1.973-1.671zm9.89-.69C10.966 2.214 9.578 2 8 2c-1.58 0-2.968.215-3.926.534-.477.16-.795.327-.975.466.18.14.498.307.975.466C5.032 3.786 6.42 4 8 4s2.967-.215 3.926-.534c.477-.16.795-.327.975-.466-.18-.14-.498-.307-.975-.466z"/>
+                                                    </svg>
+                                                    <span></span>
+                                                </a>
+                                            </div>
+                                        </td>
+
+
+
+
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+        <div class="container">
+            <footer class="py-3 my-4 border-top">
+                <p class="text-center text-muted">© 2026 - Sistema de Gestión de Tareas</p>
+            </footer>
+        </div>
+
+    </body>
+</html>
