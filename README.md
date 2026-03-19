@@ -1,5 +1,5 @@
-# Evalaucion2-Spring-BackEnd
-Es uno de las evaluaciones que resolví en la especialización de SpringBoot con Java y algunas funcionalidades básicas en este sistema de gestión de tareas
+# Evaluacion2-Spring-BackEnd
+Es uno de las evaluaciones que resolví en la especialización de Spring con Java y algunas funcionalidades básicas en este sistema de gestión de tareas
 
 Adjunto un poco del detalle:
 Este sistema, fue creado como evaluación 2 del curso que estoy llevando este 2026 Java BackEnd, el cuál nos pidió realizar la creación de este sistema cde gestión de tareas, tiene algunos cambios que es porque personalmente los he modificado ya que en los trabajos donde he estado, he utilizado mucho el sistema de Tickets, por lo que se asemejó un poco y quise añadirlo para que tuviera una leve diferencia del resto:
